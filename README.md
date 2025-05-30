@@ -53,10 +53,10 @@
 - There are multiple tags to choose from for this image, we will use the following tag: ``ubuntu22.04_cuda12.4_runtime``
 - To do that we need to open up a text editor and create the base of our container.
 
-``#Docker Image to Build From. Using noVNC base to do so. There are multiple tags to choose from.
-#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04
-FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
-#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_devel``
+``#Docker Image to Build From. Using noVNC base to do so. There are multiple tags to choose from.``
+``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04``
+``FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime``
+``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_devel``
 
 ### 2. Install OS Libraries and Dependencies
 - The next step is to determine what OS libraries we’re going to install.
@@ -74,11 +74,12 @@ FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
 - Once all of the software we want to install has been installed, we will want to run a clean to help keep our image clean and smaller.
 
 ``RUN apt-get clean``
+
 - We can run all the apt-get commands with the same RUN command if we wish, by utilizing &&.
 
-``#Install OS library dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends wget \
-    && apt-get clean``
+``#Install OS library dependencies``
+``RUN apt-get update && apt-get install -y --no-install-recommends wget \``
+``    && apt-get clean``
 
 ### 3. Install Conda
 
