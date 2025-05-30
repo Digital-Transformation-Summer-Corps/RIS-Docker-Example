@@ -64,16 +64,22 @@ FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
 - To do this, we’ll have to use apt-get to install the software.
 - First we’ll want to do an update using the following command.
 
-```RUN apt-get update```
+```
+RUN apt-get update
+```
 
 - Then we need to actually install ``wget``. In the install, since we’re installing in a Docker image, we’ll want to use some options to make it cleaner.
 - The command should look like the following.
 
-```RUN apt-get install -y --no-install-recommends wget```
+```
+RUN apt-get install -y --no-install-recommends wget
+```
 
 - Once all of the software we want to install has been installed, we will want to run a clean to help keep our image clean and smaller.
 
-```RUN apt-get clean```
+```
+RUN apt-get clean
+```
 
 - We can run all the apt-get commands with the same RUN command if we wish, by utilizing &&.
 
@@ -88,19 +94,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget \
 - We next will need to install conda into the image. We will be using miniconda for this.
 - First we need to create a directory for conda.
 
-```RUN mkdir /opt/conda```
+```
+RUN mkdir /opt/conda
+```
 
 - Then we need to download the install.
 
-```RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh```
+```
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh
+```
 
 - Finally we can run the install script.
 
-```RUN bash /opt/conda/miniconda.sh -b -u -p /opt/conda```
+```
+RUN bash /opt/conda/miniconda.sh -b -u -p /opt/conda
+```
 
 - We can clean up the image a bit by removing the install script.
 
-``RUN rm /opt/conda/miniconda.sh``
+```
+RUN rm /opt/conda/miniconda.sh
+```
 
 - Just like with the previous step, we can pull everything into a single RUN command.
 
