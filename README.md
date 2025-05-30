@@ -64,37 +64,39 @@ FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
 - To do this, we’ll have to use apt-get to install the software.
 - First we’ll want to do an update using the following command.
 
-``RUN apt-get update``
+```RUN apt-get update```
 
 - Then we need to actually install ``wget``. In the install, since we’re installing in a Docker image, we’ll want to use some options to make it cleaner.
 - The command should look like the following.
 
-``RUN apt-get install -y --no-install-recommends wget``
+```RUN apt-get install -y --no-install-recommends wget```
 
 - Once all of the software we want to install has been installed, we will want to run a clean to help keep our image clean and smaller.
 
-``RUN apt-get clean``
+```RUN apt-get clean```
 
 - We can run all the apt-get commands with the same RUN command if we wish, by utilizing &&.
 
-<code>#Install OS library dependencies
+```
+#Install OS library dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends wget \
     && apt-get clean</code>
+```
 
 ### 3. Install Conda
 
 - We next will need to install conda into the image. We will be using miniconda for this.
 - First we need to create a directory for conda.
 
-``RUN mkdir /opt/conda``
+```RUN mkdir /opt/conda```
 
 - Then we need to download the install.
 
-``RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh``
+```RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh```
 
 - Finally we can run the install script.
 
-``RUN bash /opt/conda/miniconda.sh -b -u -p /opt/conda``
+```RUN bash /opt/conda/miniconda.sh -b -u -p /opt/conda```
 
 - We can clean up the image a bit by removing the install script.
 
@@ -102,13 +104,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget \
 
 - Just like with the previous step, we can pull everything into a single RUN command.
 
-<code>#Install conda
+```
+#Install conda
 RUN mkdir /opt/conda \
     && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh \
     && bash /opt/conda/miniconda.sh -b -u -p /opt/conda \
     && rm /opt/conda/miniconda.sh</code>
+```
 
-### 4. Install conda environment.
+### 4. Add conda to PATH
+
+- We need to add the conda path to the PATH variable.
+
+```
+#Add conda to PATH
+ENV PATH=/opt/conda/bin:$PATH
+```
+
+### 5. Install conda environment.
 
 - First we need to create a conda environment file.
 - In this environment, we are going to install the following:
@@ -121,7 +134,8 @@ RUN mkdir /opt/conda \
   - torchaudio
 - In order to do this, we create a yml file with the following.
 
-<code>name: dt-summer-corps
+```
+name: dt-summer-corps
 channels:
   - conda-forge
   - bioconda
@@ -134,190 +148,91 @@ dependencies:
     - scipy
     - torch
     - torchvision
-    - torchaudio</code>
+    - torchaudio
+```
 
+- Now that we have the environment file created, we need to copy it into the Docker image.
 
-### 5. Build, Test, and Upload An Image
-Once you have your Dockerfile saved within a directory (folder) designed for the image, the next step is to build the container.
+```
+#Copy conda environment file into Docker
+COPY environment.yml .
+```
 
-The Docker base command to build a Docker container from a Dockerfile, looks like the following.
+- Finally, we need to install the conda environment.
 
+```
+#Build conda environment
+RUN conda env create -f environment.yml
+```
 
+### 6. Build, Test, and Upload An Image
 
+- Once you have your Dockerfile saved within a directory (folder) designed for the image, the next step is to build the container.
+- The Docker base command to build a Docker container from a Dockerfile, looks like the following.
+
+```
 docker build -t username/container-name:tag directory
-In our case, we’ll be using a directory named docker-example and we’ll simply call the container docker-example.
+```
 
-username refers to your Docker Hub username.
+- In our case, we’ll be using a directory named dt-summer-corps and we’ll simply call the container ``dt-summer-corps``.
+- ``username`` refers to your Docker Hub username.
+- So, our Docker build command should look like the following.
 
-So, our Docker build command should look like the following.
+```
+docker build -t username/dt-summer-corps:latest dt-summer-corps/
+```
 
+- If it builds successfully, you should get output of information about the building process.
+- Now we can run the Docker image we’ve created.
+- The base Docker run command is as follows.
 
-
-docker build -t username/docker-example:latest docker-example/
-If it builds successfully, you should get output of information about the building process, but at the end you’ll see the following.
-
-image-20250408-143558.png
-Now we can run the Docker image we’ve created.
-
-The base Docker run command is as follows.
-
-
-
+```
 docker run username/container-name:tag command
-For our example image, this will look like the following.
+```
 
+- For our example image, this will look like the following.
 
+```
+docker run username/dt-summer-corps:latest python --version
+```
 
-docker run username/docker-example:latest cowsay "Hello World!"
-Your output should look like the following.
+- Once we are certain our Docker image is functioning correctly, we can then push it to Docker Hub.
+- The basic push command looks as follows.
 
-image-20250408-143701.png
-Once we are certain our Docker image is functioning correctly, we can then push it to Docker Hub.
-
-The basic push command looks as follows.
-
-
-
+```
 docker push username/container-name:tag
-You should see output like the following for the push.
+```
 
-image-20250408-143742.png
-4. Expanding An Image
-While it’s fun to tell our cow what to say, what if we had it say randomly generated fortunes?
+### 7. Using a Docker Container on the Compute1 Platform
 
-We can do this by also installing the fortune library into our docker container.
+- Now that we have our docker container created and uploaded to Docker Hub, we can use it to run the software we installed on the RIS Compute Platform.
+-If you are not knowledgeable on how to use the RIS Compute Platform, you can [check out our documentation](https://washu.atlassian.net/wiki/spaces/RUD/overview).
+- To get the output we want on the RIS Compute Platform, we will have to use the following commands.
 
-Luckily, once our base image has been designed this requires changing only 1 line in our Dockerfile.
+```
+PATH=/opt/conda/bin:$PATH bsub -Is -q general-interactive -G compute-dt-summer-corp -a 'docker(username/dt-summer-corps:latest)' /bin/bash 
+```
 
-We will add fortune and fortunes to our apt-get install command, like the following.
+- Again, in this case the username is your Docker Hub username.
+- If everything is working correctly, you should get a prompt and be able to activate the conda environment.
 
+## Additional Notes
 
+- If you wish to use a conda envrionment on the Compute1 platform, you need to add the following to your .bashrc.
 
-&& apt-get install -y --no-install-recommends cowsay fortune fortunes \
-Once that is changed, we can save the Dockerfile and rebuild the image.
-
-Now we can pipe fortune into cowsay and create our fortune telling cow.
-
-Unfortunately when running Docker, to be able to use the pipe command we need to add /bin/bash -c to our command.
-
-So our new Docker run command should look like the following.
-
-
-
-docker run username/docker-example:latest /bin/bash -c "fortune | cowsay"
-If everything is working correctly, we should get output like the following.
-
-image-20250408-143948.png
-You can re-upload your image to Docker Hub so that you have the newest image available for the next part.
-
-Your complete Dockerfile should now look like the following.
-
-
-
-#Start from bionic base Ubuntu image.
-FROM ubuntu:bionic
-#Install cowsay
-RUN apt-get update \
-&& apt-get install -y --no-install-recommends cowsay fortune fortunes \
-&& apt-get clean
-#Add cowsay to the PATH variable
-ENV PATH="$PATH:/usr/games"
-RUN export PATH
-Using a Docker Container on the Compute1 Platform
-Now that we have our docker container created and uploaded to Docker Hub, we can use it to run the software we installed on the RIS Compute Platform.
-
-If you are not knowledgeable on how to use the RIS Compute Platform, you can go over the following documentation. 
-Compute1 Quickstart 
-
-To get the output we want on the RIS Compute Platform, we will have to use the following commands.
-
-
-
-export LSF_DOCKER_PRESERVE_ENVIRONMENT=false
-bsub -Is -q workshop-interactive -G compute-workshop -a 'docker(username/docker-example:latest)' /bin/bash -c "fortune | cowsay"
-We need to use the LSF_DOCKER_PRESERVE_ENVIRONMENT variable because we had to set environment variables within our container and we want to use those instead of preserving those on the Compute Platform.
-
-Again, in this case the username is your Docker Hub username.
-
-If everything is working correctly, you should see results like the following.
-
-image-20250408-144302.png
-cowsay has a fun little additional aspect. If a fortune telling cow isn’t fantastic enough, we can always use a dragon.
-
-If you add the -f dragon option to the cowsay command, you can turn your cow into a dragon.
-
-
-
-export LSF_DOCKER_PRESERVE_ENVIRONMENT=false
-bsub -Is -q workshop-interactive -G compute-workshop -a 'docker(username/docker-example:latest)' /bin/bash -c "fortune | cowsay -f dragon"
-image-20250408-144519.png
-Advanced Container Addition
-As an advanced step, we can add another library that will add color to our cows and dragons.
-
-lolcat adds rainbow coloring to the display.
-
-Once we add it to our container, update, and upload to Docker Hub, we can add the color via lolcat with the following command.
-
-There are no hints for this step as it is advanced and designed for the user to figure out.
-
-
-
-export LSF_DOCKER_PRESERVE_ENVIRONMENT=false
-bsub -Is -q workshop-interactive -G compute-workshop -a 'docker(username/docker-example:latest)' /bin/bash -c "fortune | cowsay | lolcat"
-image-20250408-144650.png
-Example of Using the Compute Platform for Development
-As mentioned before you can develop a Docker image on the Compute Platform.
-
-The first thing you’ll need to do is let Docker Hub know your credentials by using the following command.
-
-
-
-LSB_DOCKER_LOGIN_ONLY=1 bsub -G compute-workshop -q workshop-interactive -Is -a 'docker_build' -- .
-This command only needs to be done once and will ask for your Docker Hub credentials (you’ll need an Docker Hub account prior to this step).
-
-The login credentials you’ll need to use are those for Docker Hub NOT your WashU credentials.
-
-image-20250408-144801.png
-Once you have this set, you can start development of your Docker image.
-
-If you wish to use the Compute Platform to develop images or other software, we suggest checking out our documentation on doing so (Coming Soon!).
-
-For this simple example, we’ll use the vi text editor that’s available on the Compute Platform.
-
-You need to create a directory called docker-example and then cd into that directory.
-
-Once in the docker-example directory, you will need to create your Dockerfile via the following command
-
-
-
-vi Dockerfile
-Once in the editor you will need to press the I key to be able to edit the file. Now you just need to put in the information in the Dockerfile like developed above.
-
-Once you’ve entered the info, then you press the escape key to disengage edit mode.
-
-Then you need to press the : key and type wq and hit the Enter key. This will write your changes and quit the editor.
-
-Now you can use the cat command on your file to make sure it contains the correct information.
-
-image-20250408-145023.png
-In order to build and push our Docker image, we need to cd back out of docker-example directory.
-
-image-20250408-145047.png
-Then we need to use the following command to build and push our Docker image.
-
-
-
-bsub -G compute-workshop -q workshop-interactive -Is -a 'docker_build(username/docker-example)' -- latest docker-example
-Where username is your Docker Hub username.
-
-Once this is entered you will see the normal Docker building information. 
-
-image-20250408-145136.png
-image-20250408-145147.png
-Now that the container is built and pushed, we can use the container like we need above in order to have our fortune telling cow.
-
-
-
-export LSF_DOCKER_PRESERVE_ENVIRONMENT=false
-bsub -Is -q workshop-interactive -G compute-workshop -a 'docker(username/docker-example:latest)' /bin/bash -c "fortune | cowsay"
-image-20250408-145229.png
+```
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/opt/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+        . "/opt/conda/etc/profile.d/conda.sh"
+    else
+        export PATH="/opt/conda/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+```
