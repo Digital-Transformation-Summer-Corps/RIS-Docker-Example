@@ -111,7 +111,30 @@ RUN mkdir /opt/conda \
 ### 4. Install conda environment.
 
 - First we need to create a conda environment file.
+- In this environment, we are going to install the following:
+  - matplotlib
+  - pandas
+  - numpy
+  - scipy
+  - torch
+  - torchvision
+  - torchaudio
+- In order to do this, we create a yml file with the following.
 
+<code>name: dt-summer-corps
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pip
+  - pip:
+    - matplotlib
+    - pandas
+    - numpy
+    - scipy
+    - torch
+    - torchvision
+    - torchaudio</code>
 
 
 ### 5. Build, Test, and Upload An Image
