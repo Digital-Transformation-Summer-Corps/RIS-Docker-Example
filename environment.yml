@@ -1,0 +1,14 @@
+name: dt-summer-corps
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pip
+  - pip:
+    - matplotlib
+    - pandas
+    - numpy
+    - scipy
+    - torch
+    - torchvision
+    - torchaudio
