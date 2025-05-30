@@ -53,13 +53,10 @@
 - There are multiple tags to choose from for this image, we will use the following tag: ``ubuntu22.04_cuda12.4_runtime``
 - To do that we need to open up a text editor and create the base of our container.
 
-``#Docker Image to Build From. Using noVNC base to do so. There are multiple tags to choose from.``
-
-``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04``
-
-``FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime``
-
-``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_devel``
+<code>#Docker Image to Build From. Using noVNC base to do so. There are multiple tags to choose from.``
+#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04
+FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
+#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_devel</code>
 
 ### 2. Install OS Libraries and Dependencies
 - The next step is to determine what OS libraries we’re going to install.
