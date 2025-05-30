@@ -77,11 +77,9 @@ FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
 
 - We can run all the apt-get commands with the same RUN command if we wish, by utilizing &&.
 
-``#Install OS library dependencies``
-
-``RUN apt-get update && apt-get install -y --no-install-recommends wget \``
-
-``    && apt-get clean``
+<code>#Install OS library dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends wget \
+    && apt-get clean</code>
 
 ### 3. Install Conda
 
@@ -104,15 +102,11 @@ FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime
 
 - Just like with the previous step, we can pull everything into a single RUN command.
 
-``#Install conda``
-
-``RUN mkdir /opt/conda \``
-
-``    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh \``
-
-``    && bash /opt/conda/miniconda.sh -b -u -p /opt/conda \``
-
-``    && rm /opt/conda/miniconda.sh``
+<code>#Install conda
+RUN mkdir /opt/conda \
+    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh \
+    && bash /opt/conda/miniconda.sh -b -u -p /opt/conda \
+    && rm /opt/conda/miniconda.sh</code>
 
 ### 4. Install conda environment.
 
