@@ -54,8 +54,11 @@
 - To do that we need to open up a text editor and create the base of our container.
 
 ``#Docker Image to Build From. Using noVNC base to do so. There are multiple tags to choose from.``
+
 ``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04``
+
 ``FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_runtime``
+
 ``#FROM ghcr.io/washu-it-ris/novnc:ubuntu22.04_cuda12.4_devel``
 
 ### 2. Install OS Libraries and Dependencies
@@ -78,31 +81,49 @@
 - We can run all the apt-get commands with the same RUN command if we wish, by utilizing &&.
 
 ``#Install OS library dependencies``
+
 ``RUN apt-get update && apt-get install -y --no-install-recommends wget \``
+
 ``    && apt-get clean``
 
 ### 3. Install Conda
 
-We next will need to add the directory where cowsay is installed to the PATH variable so that we can use the software.
+- We next will need to install conda into the image. We will be using miniconda for this.
+- First we need to create a directory for conda.
+
+``RUN mkdir /opt/conda``
+
+- Then we need to download the install.
+
+``RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh``
+
+- Finally we can run the install script.
+
+``RUN bash /opt/conda/miniconda.sh -b -u -p /opt/conda``
+
+- We can clean up the image a bit by removing the install script.
+
+``RUN rm /opt/conda/miniconda.sh``
+
+- Just like with the previous step, we can pull everything into a single RUN command.
+
+``#Install conda``
+
+``RUN mkdir /opt/conda \``
+
+``    && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /opt/conda/miniconda.sh \``
+
+``    && bash /opt/conda/miniconda.sh -b -u -p /opt/conda \``
+
+``    && rm /opt/conda/miniconda.sh``
+
+### 4. Install conda environment.
+
+- First we need to create a conda environment file.
 
 
 
-ENV PATH="$PATH:/usr/games"
-RUN export PATH
-Now our Dockerfile should look like the following.
-
-
-
-#Start from bionic base Ubuntu image.
-FROM ubuntu:bionic
-#Install cowsay
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends cowsay \
-    && apt-get clean
-#Add cowsay to the PATH variable
-ENV PATH="$PATH:/usr/games"
-RUN export PATH
-3. Build, Test, and Upload An Image
+### 5. Build, Test, and Upload An Image
 Once you have your Dockerfile saved within a directory (folder) designed for the image, the next step is to build the container.
 
 The Docker base command to build a Docker container from a Dockerfile, looks like the following.
